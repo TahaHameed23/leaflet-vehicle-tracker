@@ -27,7 +27,7 @@ const MapComponent = () => {
     if (!isStarted) {
       setIsStarted(true); // Disable button after first click
       axios
-        .get("https://lvt-backend.onrender.com/vehicle-data?limit=20")
+        .get("https://lvt-backend.onrender.com/vehicle-data?limit=100")
         .then((response) => {
           const data = response.data.data;
           const parsedRoute = data.map((point) => ({
