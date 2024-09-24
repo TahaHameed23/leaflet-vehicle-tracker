@@ -20,24 +20,30 @@ const MapComponent = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [address, setAddress] = useState(""); 
   const [isVehicleMoving, setIsVehicleMoving] = useState(true); 
-
-  useEffect(() => {
-    axios.get("http://localhost:3000/vehicle-data?limit=20")
-      .then((response) => {
-        const data = response.data.data;
-        const parsedRoute = data.map(point => ({
-          latitude: point.latitude,
-          longitude: point.longitude,
-          timestamp: new Date(point.timestamp),
-        }));
-        setRoute(parsedRoute);
-        setCurrentPosition([parsedRoute[0].latitude, parsedRoute[0].longitude]);
-        setVisitedRoute([{ latitude: parsedRoute[0].latitude, longitude: parsedRoute[0].longitude }]);
-      })
-      .catch((error) => {
-        console.error("Error fetching vehicle data:", error);
-      });
-  }, []);
+  const [isStarted, setIsStarted] = useState(false)
+  
+  const startMoving = () => {
+    // Prevent starting again if already started
+    if (!isStarted) {
+      setIsStarted(true); // Disable button after first click
+      axios
+        .get("http://localhost:3000/vehicle-data?limit=60")
+        .then((response) => {
+          const data = response.data.data;
+          const parsedRoute = data.map((point) => ({
+            latitude: point.latitude,
+            longitude: point.longitude,
+            timestamp: new Date(point.timestamp),
+          }));
+          setRoute(parsedRoute);
+          setCurrentPosition([parsedRoute[0].latitude, parsedRoute[0].longitude]);
+          setVisitedRoute([{ latitude: parsedRoute[0].latitude, longitude: parsedRoute[0].longitude }]);
+        })
+        .catch((error) => {
+          console.error("Error fetching vehicle data:", error);
+        });
+    }
+  };
 
   useEffect(() => {
     let currentIndex = 0;
@@ -58,10 +64,12 @@ const MapComponent = () => {
         setSpeed(distance * 1000);
         setCurrentTime(newPosition.timestamp);
 
-        setTimeout(moveVehicle, 800);
+        setTimeout(moveVehicle, 200);
       } else {
         // If the vehicle has reached the last point, set isVehicleMoving to false
         setIsVehicleMoving(false);
+        setIsStarted(false)
+        setSpeed(0)
       }
     };
 
@@ -85,7 +93,7 @@ const MapComponent = () => {
     };
   
     // Define the intervalId variable here
-    const intervalId = setInterval(fetchAddress, 6000); // Call every 6 seconds
+    const intervalId = setInterval(fetchAddress, 3000); // Call every 6 seconds
   
     // Initial call to fetch address
     fetchAddress();
@@ -99,20 +107,26 @@ const MapComponent = () => {
 
   
   return (
-    <div>
-      <VehicleInfo 
-        position={currentPosition} 
-        heading={heading} 
-        speed={speed} 
-        time={currentTime}
-      />
+    <div className="relative h-[500px]">
+      {/* Vehicle Info positioned on top of the map */}
+      <div className="absolute top-4 right-4 bg-white bg-opacity-80 rounded-lg shadow-lg z-20">
+        <VehicleInfo 
+          position={currentPosition} 
+          heading={heading} 
+          speed={speed} 
+          time={currentTime}
+          start={startMoving}
+          isStarted={isStarted}
+        />
+      </div>
 
-      <MapContainer center={currentPosition} zoom={13.4} style={{ height: "500px", width: "100%" }}>
+      {/* Map */}
+      <MapContainer center={currentPosition} zoom={14.3} className="h-screen p-4 mx-auto w-full z-10">
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
         />
-        {visitedRoute.length > 0 && (
+        
           <>
             <Marker
               position={currentPosition}
@@ -125,13 +139,12 @@ const MapComponent = () => {
                 iconAnchor: [19, 38],
               })}
             >
-              <Popup>
-                {address ? address : "Loading address..."}
+              <Popup className="rounded-lg">
+                <div className="font-semibold"><span className="text-blue-600 font-extrabold">Address: </span>{address ? address : "Loading address..."}</div>
               </Popup>
-            </Marker>
+          </Marker>
             <Polyline positions={visitedRoute.map(pt => [pt.latitude, pt.longitude])} color="blue" />
           </>
-        )}
       </MapContainer>
     </div>
   );
