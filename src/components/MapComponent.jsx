@@ -8,7 +8,7 @@ import revGeoCod from "./revGeoCod";
 
 
 const vehicleIcon = new L.Icon({
-  iconUrl: `../../public/car.png`,
+  iconUrl: "/car.png",
   iconSize: [30, 50],
 });
 
@@ -129,7 +129,7 @@ const MapComponent = () => {
             icon={L.divIcon({
               className: 'vehicle-icon',
               html: `<div style="transform: rotate(${heading}deg); transform-origin: bottom center;">
-                      <img src="${vehicleIcon.options.iconUrl}" style="width: 30px; height: 50px;" />
+                      <img src="${vehicleIcon.options.iconUrl}" style="width: 30px; height: 50px; background:transparent" />
                       </div>`,
               iconSize: [40, 50],
               iconAnchor: [19, 38],
