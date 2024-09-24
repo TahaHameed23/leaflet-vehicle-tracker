@@ -26,7 +26,7 @@ const MapComponent = () => {
     if (!isStarted) {
       setIsStarted(true); // Disable button after first click
       axios
-        .get("http://localhost:3000/vehicle-data?limit=60")
+        .get("https://lvt-backend.onrender.com/vehicle-data?limit=100")
         .then((response) => {
           const data = response.data.data;
           const parsedRoute = data.map((point) => ({
@@ -49,21 +49,25 @@ const MapComponent = () => {
 
     const moveVehicle = () => {
       if (route.length > 0 && currentIndex < route.length - 1) {
+        //moves vehicle
         const prevPosition = route[currentIndex];
         currentIndex += 1;
         const newPosition = route[currentIndex];
         setCurrentPosition([newPosition.latitude, newPosition.longitude]);
         setVisitedRoute((prevPath) => [...prevPath, newPosition]);
 
+        //rotate car
         const latDiff = newPosition.latitude - prevPosition.latitude;
         const lngDiff = newPosition.longitude - prevPosition.longitude;
         const angle = Math.atan2(lngDiff, latDiff) * (180 / Math.PI) + 180;
         setHeading(angle);
+
+        //info
         const distance = Math.sqrt(latDiff ** 2 + lngDiff ** 2);
         setSpeed(distance * 1000);
         setCurrentTime(newPosition.timestamp);
 
-        setTimeout(moveVehicle, 200);
+        setTimeout(moveVehicle, 300);
       } else {
         // If the vehicle reached the last point, stop fetching address
         setIsVehicleMoving(false);
