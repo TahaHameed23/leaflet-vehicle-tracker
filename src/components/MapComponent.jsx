@@ -5,9 +5,10 @@ import "leaflet/dist/leaflet.css";
 import axios from "axios";
 import VehicleInfo from "./VehicleInfo";
 import revGeoCod from "./revGeoCod"; 
-import car from '../../public/car.png'
+
+
 const vehicleIcon = new L.Icon({
-  iconUrl: {car},
+  iconUrl: `../../public/car.png`,
   iconSize: [30, 50],
 });
 
@@ -26,7 +27,7 @@ const MapComponent = () => {
     if (!isStarted) {
       setIsStarted(true); // Disable button after first click
       axios
-        .get("https://lvt-backend.onrender.com/vehicle-data?limit=100")
+        .get("https://lvt-backend.onrender.com/vehicle-data?limit=20")
         .then((response) => {
           const data = response.data.data;
           const parsedRoute = data.map((point) => ({
@@ -88,15 +89,12 @@ const MapComponent = () => {
         clearInterval(intervalId); // stop fetching address
         return; 
       }
-  
       revGeoCod(currentPosition[0], currentPosition[1]).then(fetchedAddress => {
         setAddress(fetchedAddress);
       });
     };
-  
-    const intervalId = setInterval(fetchAddress, 4000); 
-  
     // Initial call to fetch address
+    const intervalId = setInterval(fetchAddress, 4000); 
     fetchAddress();
   
     return () => {
