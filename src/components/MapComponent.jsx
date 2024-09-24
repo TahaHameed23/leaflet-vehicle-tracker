@@ -5,9 +5,9 @@ import "leaflet/dist/leaflet.css";
 import axios from "axios";
 import VehicleInfo from "./VehicleInfo";
 import revGeoCod from "./revGeoCod"; 
-
+import car from '../../public/car.png'
 const vehicleIcon = new L.Icon({
-  iconUrl: "../../public/car.png",
+  iconUrl: {car},
   iconSize: [30, 50],
 });
 
