@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Polyline, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import axios from "axios"; // Import axios to make API calls
+import axios from "axios";
 import VehicleInfo from "./VehicleInfo";
-import revGeoCod from "./revGeoCod"; // Ensure this import is correct
+import revGeoCod from "./revGeoCod"; 
 
 const vehicleIcon = new L.Icon({
   iconUrl: "../../public/car.png",
@@ -23,7 +23,6 @@ const MapComponent = () => {
   const [isStarted, setIsStarted] = useState(false)
   
   const startMoving = () => {
-    // Prevent starting again if already started
     if (!isStarted) {
       setIsStarted(true); // Disable button after first click
       axios
@@ -66,7 +65,7 @@ const MapComponent = () => {
 
         setTimeout(moveVehicle, 200);
       } else {
-        // If the vehicle has reached the last point, set isVehicleMoving to false
+        // If the vehicle reached the last point, stop fetching address
         setIsVehicleMoving(false);
         setIsStarted(false)
         setSpeed(0)
@@ -78,13 +77,12 @@ const MapComponent = () => {
     }
   }, [route]);
 
-  // New useEffect for calling revGeoCod every 6 seconds
   useEffect(() => {
     const fetchAddress = () => {
       // Only fetch if the vehicle is still moving
       if (!isVehicleMoving) {
-        clearInterval(intervalId); // Clear interval if the vehicle has stopped
-        return; // Exit the function if the vehicle is not moving
+        clearInterval(intervalId); // stop fetching address
+        return; 
       }
   
       revGeoCod(currentPosition[0], currentPosition[1]).then(fetchedAddress => {
@@ -92,23 +90,21 @@ const MapComponent = () => {
       });
     };
   
-    // Define the intervalId variable here
-    const intervalId = setInterval(fetchAddress, 3000); // Call every 6 seconds
+    const intervalId = setInterval(fetchAddress, 4000); 
   
     // Initial call to fetch address
     fetchAddress();
   
     return () => {
-      clearInterval(intervalId); // Clear interval on component unmount
-    }; // Cleanup function to clear interval
-  }, [isVehicleMoving]); // Depend on isVehicleMoving and currentPosition
+      clearInterval(intervalId); 
+    };
+  }, [isVehicleMoving]);
   
   
 
   
   return (
     <div className="relative h-[500px]">
-      {/* Vehicle Info positioned on top of the map */}
       <div className="absolute top-4 right-4 bg-white bg-opacity-80 rounded-lg shadow-lg z-20">
         <VehicleInfo 
           position={currentPosition} 
@@ -120,28 +116,26 @@ const MapComponent = () => {
         />
       </div>
 
-      {/* Map */}
       <MapContainer center={currentPosition} zoom={14.3} className="h-screen p-4 mx-auto w-full z-10">
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
-        />
-        
-          <>
-            <Marker
-              position={currentPosition}
-              icon={L.divIcon({
-                className: 'vehicle-icon',
-                html: `<div style="transform: rotate(${heading}deg); transform-origin: bottom center;">
-                         <img src="${vehicleIcon.options.iconUrl}" style="width: 30px; height: 50px;" />
-                       </div>`,
-                iconSize: [40, 50],
-                iconAnchor: [19, 38],
-              })}
-            >
-              <Popup className="rounded-lg">
-                <div className="font-semibold"><span className="text-blue-600 font-extrabold">Address: </span>{address ? address : "Loading address..."}</div>
-              </Popup>
+      />
+        <>
+          <Marker
+            position={currentPosition}
+            icon={L.divIcon({
+              className: 'vehicle-icon',
+              html: `<div style="transform: rotate(${heading}deg); transform-origin: bottom center;">
+                      <img src="${vehicleIcon.options.iconUrl}" style="width: 30px; height: 50px;" />
+                      </div>`,
+              iconSize: [40, 50],
+              iconAnchor: [19, 38],
+            })}
+          >
+            <Popup className="rounded-lg">
+              <div className="font-semibold"><span className="text-blue-600 font-extrabold">Address: </span>{address ? address : "Loading address..."}</div>
+            </Popup>
           </Marker>
             <Polyline positions={visitedRoute.map(pt => [pt.latitude, pt.longitude])} color="blue" />
           </>
